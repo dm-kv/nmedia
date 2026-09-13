@@ -74,7 +74,7 @@ class FeedFragment : Fragment() {
             footer = PostLoadStateAdapter { adapter.retry() },
         )
         binding.list.adapter = listAdapter
-        binding.list.addItemDecoration(DateSeparatorDecoration(adapter, listAdapter))
+        binding.list.addItemDecoration(DateSeparatorDecoration(adapter, listAdapter, requireContext()))
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -90,7 +90,6 @@ class FeedFragment : Fragment() {
                 }
             }
         }
-
 
         binding.swiperefresh.setOnRefreshListener {
             adapter.refresh()

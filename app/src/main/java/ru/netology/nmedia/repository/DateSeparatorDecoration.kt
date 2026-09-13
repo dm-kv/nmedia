@@ -1,5 +1,6 @@
 package ru.netology.nmedia.repository
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -12,11 +13,40 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.adapter.PostsAdapter
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import ru.netology.nmedia.R
+
 
 class DateSeparatorDecoration(
     private val postsAdapter: PostsAdapter,
     private val concatAdapter: ConcatAdapter,
+    context: Context,
 ) : RecyclerView.ItemDecoration() {
+
+    private val density = context.resources.displayMetrics.density
+
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK
+        textSize = 14f * density
+        typeface = Typeface.DEFAULT_BOLD
+        textAlign = Paint.Align.CENTER
+    }
+
+    private val rectPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#E0E0E0")
+        style = Paint.Style.FILL
+    }
+
+    private val fm = textPaint.fontMetrics
+    private val textHeight = fm.descent - fm.ascent
+
+    private val rectHeight = 48f * density
+    private val paddingVertical = 4f * density
+    private val separatorOffset = (56f * density).toInt()
+
+
+    private val todayLabel = context.getString(R.string.today)
+    private val yesterdayLabel = context.getString(R.string.yesterday)
+    private val olderLabel = context.getString(R.string.older)
 
     private fun headerSize(): Int {
         val adapters = concatAdapter.adapters
@@ -51,8 +81,7 @@ class DateSeparatorDecoration(
             }
 
             if (shouldDrawSeparatorBefore(dataPos, publishedAt)) {
-                val density = view.context.resources.displayMetrics.density
-                outRect.top = (56f * density).toInt()
+                outRect.top = separatorOffset
             }
         } catch (e: Exception) {
         }
@@ -121,35 +150,22 @@ class DateSeparatorDecoration(
     }
 
     private fun getLabel(instant: Instant): String = when (getGroupKey(instant)) {
-        "TODAY" -> "Сегодня"
-        "YESTERDAY" -> "Вчера"
-        else -> "На прошлой неделе"
+        "TODAY" -> todayLabel
+        "YESTERDAY" -> yesterdayLabel
+        else -> olderLabel
     }
 
-    private fun drawSeparator(canvas: Canvas, recyclerView: RecyclerView, view: View, label: String) {
-        val density = view.context.resources.displayMetrics.density
-
-        val rectHeight = 48f * density
-        val paddingVertical = 4f * density
-
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            textSize = 14f * density
-            typeface = Typeface.DEFAULT_BOLD
-            textAlign = Paint.Align.CENTER
-        }
-        val fm = textPaint.fontMetrics
-        val textHeight = fm.descent - fm.ascent
-
+    private fun drawSeparator(
+        canvas: Canvas,
+        recyclerView: RecyclerView,
+        view: View,
+        label: String,
+    ) {
         val left = recyclerView.paddingLeft.toFloat()
         val right = (recyclerView.width - recyclerView.paddingRight).toFloat()
         val top = view.top.toFloat() - paddingVertical - rectHeight
         val bottom = view.top.toFloat() - paddingVertical
 
-        val rectPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.parseColor("#E0E0E0")
-            style = Paint.Style.FILL
-        }
         canvas.drawRect(left, top, right, bottom, rectPaint)
 
         val xText = (left + right) / 2f
